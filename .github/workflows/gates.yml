@@ -1,0 +1,33 @@
+name: gates
+on: workflow_dispatch
+jobs:
+  artifact-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: store payload
+        uses: actions/upload-artifact@v2
+        with:
+          name: payload.json
+          path: ${{ github.event_path }}
+      - name: after artifact
+        run: echo "REACHED_AFTER_ARTIFACT_V2"
+  script-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: chatops
+        id: chatops
+        uses: actions/github-script@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            }).then( (r) => {
+              var SHA = r.data.default_branch
+              console.log(`::set-output name=SHA::${SHA}`)
+            })
+      - name: show output
+        run: |
+          echo "OUTPUT_SHA=[${{ steps.chatops.outputs.SHA }}]"
+          echo "REACHED_AFTER_SCRIPT_V1"
