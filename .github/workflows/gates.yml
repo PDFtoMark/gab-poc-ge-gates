@@ -1,9 +1,11 @@
 name: gates
 on: workflow_dispatch
 jobs:
-  artifact-gate:
+  artifact-late:
     runs-on: ubuntu-latest
     steps:
+      - name: first run
+        run: echo "REACHED_STEP_ONE"
       - name: store payload
         uses: actions/upload-artifact@v2
         with:
@@ -20,14 +22,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            }).then( (r) => {
-              var SHA = r.data.default_branch
-              console.log(`::set-output name=SHA::${SHA}`)
+            github.repos.get({owner: context.repo.owner, repo: context.repo.repo}).then( (r) => {
+              console.log(`::set-output name=SHA::${r.data.default_branch}`)
             })
       - name: show output
-        run: |
-          echo "OUTPUT_SHA=[${{ steps.chatops.outputs.SHA }}]"
-          echo "REACHED_AFTER_SCRIPT_V1"
+        run: echo "OUTPUT_SHA=[${{ steps.chatops.outputs.SHA }}]"
