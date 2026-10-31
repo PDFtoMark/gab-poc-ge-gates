@@ -1,0 +1,31 @@
+name: geimg
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: manifest probe
+        run: |
+          set +e
+          docker manifest inspect greatexpectations/great_expectations:python-3.7-buster-ge-0.12.0 >/tmp/m.txt 2>/tmp/e.txt
+          echo "EXIT=$?"
+          head -3 /tmp/e.txt || true
+          echo "---"
+          docker manifest inspect greatexpectations/great_expectations:latest >/tmp/m2.txt 2>/tmp/e2.txt
+          echo "LATEST_EXIT=$?"
+          head -3 /tmp/e2.txt || true
+  geaction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: minimal GE home
+        run: |
+          mkdir -p test/great_expectations
+          printf 'config_version: 2.0\nplugins_directory: plugins/\n' > test/great_expectations/great_expectations.yml
+      - name: run GE action
+        id: ge
+        continue-on-error: true
+        uses: great-expectations/great_expectations_action@main
+        with:
+          CHECKPOINTS: npi.pass
+          GE_HOME: 'test'
+          DEBUG: true
